@@ -19,7 +19,7 @@ Only what was originally authored for this system:
 This system is a **router and ledger on top of specialist agents** — it is not a complete, self-contained roster. Each office head delegates to leaf agents that aren't included here, because they weren't originally written for this project and aren't mine to redistribute:
 
 - `pm`, `researcher`, `designer`, `qa`, `release-manager`, `frontend-developer`, `code-reviewer` — generic single-purpose agents; write your own versions of these (the head files describe exactly what each is expected to do)
-- `codex-rescue` — if you use the official [Codex plugin for Claude Code](https://github.com/openai/codex-plugin-cc)
+- `codex:codex-rescue` (note the plugin namespace prefix) — if you use the official [Codex plugin for Claude Code](https://github.com/openai/codex-plugin-cc)
 - `impeccable-*` design-review agents — from [pbakaus/impeccable](https://github.com/pbakaus/impeccable) (Apache-2.0)
 - `ecc-architect`, `ecc-tdd-guide`, `ecc-build-error-resolver`, `ecc-security-reviewer` — optional, from the "Everything Claude Code" bundle; `engineering-head`/`quality-head` fall back to the generic agents above if you don't have these
 
