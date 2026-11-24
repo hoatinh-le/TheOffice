@@ -14,6 +14,12 @@ Control room: `<YOUR_DASHBOARD_URL>` — approvals and live status get worked he
 
 ## Running multiple agents at once
 
-Worktree isolation (`isolation: "worktree"` on the `Agent` call) is how Engineering/Quality stages avoid colliding on the same repo when more than one runs concurrently. **This only works when the Claude Code session itself is launched from inside the target project's git repo** — `cd` into your project before running `claude`, not from your home directory.
+Engineering/Quality stages isolate via a real `git worktree add` that Central Office runs itself (`git -C <repo> worktree add ../<repo>-<chain_id> -b agent/<chain_id>`), not Claude Code's native `Agent`-tool `isolation` param (that only isolates relative to wherever the calling session already is, and fails outside a git repo). Because Central Office runs `git worktree add` directly, this works for any repo path regardless of where you launched `claude` from.
 
-What it doesn't cover: the shared ledger lives outside git with no locking — two sessions running `/office` at once can still race on it. Worst case is a rare duplicate task or a dashboard glitch, not lost code. Real locking would need the office heads to have `Bash` (they deliberately don't) or an append-only ledger redesign — not built yet.
+Each worktree gets `.env*` files copied in and the project's install command run (detected from the lockfile) — a fresh worktree has neither by default.
+
+**Still yours to handle:** dev-server port collisions and any shared database across worktrees of the same repo — not something `/office` can solve generically.
+
+**Merging:** one worktree branch at a time — diff before merging, rebase onto main after each merge. Worktrees isolate working copies, not what branches merge into.
+
+What's still not covered: the shared ledger lives outside git with no locking — two sessions running `/office` at once can still race on it. Worst case is a rare duplicate task or a dashboard glitch, not lost code. Real locking would need the office heads to have `Bash` (they deliberately don't) or an append-only ledger redesign — not built yet.

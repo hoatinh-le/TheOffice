@@ -10,7 +10,7 @@ Three JSONL files under `~/.claude/office/`, one record per line. New tasks/hand
 
 `chain_id` groups every stage of one multi-office `/office` request (null for a single-stage task, or a single-stage co-pilot-mode task). Each stage still gets its own `id` — `chain_id` is how the dashboard and a reader correlate them, not a replacement for the per-stage id.
 
-`worktree` is the branch name when an engineering/quality stage ran isolated (`isolation: "worktree"` on the `Agent` call) and made changes — `null` for every other stage, and `null` for an isolated stage that made no changes (the worktree is auto-cleaned up in that case, nothing to point to). Changes on that branch aren't on the main branch yet; merging it is a `merge`, gated the same as any other.
+`worktree` is the worktree's path when an engineering/quality stage ran isolated — Central Office creates it directly via `git worktree add` (not the native `Agent` tool `isolation` param, which only works relative to Central Office's own session location) — `null` when no worktree was created for that stage. The branch is always named `agent/<chain_id>`, never the head's name. Changes on that branch aren't on the main branch yet; merging it is a `merge`, gated the same as any other, one branch at a time (merging two worktree branches in a batch just moves conflicts to merge time instead of preventing them).
 
 ## `handoffs.jsonl`
 
