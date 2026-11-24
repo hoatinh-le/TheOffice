@@ -1,0 +1,277 @@
+<title>Control Room</title>
+
+<style>
+  :root{
+    --bg:#F6F4EF; --surface:#FFFFFF; --surface-2:#EEEAE1; --surface-3:#E4DECE;
+    --ink:#1F2420; --ink-soft:#52584F; --ink-faint:#5F6358;
+    --accent:#2F5D55; --accent-soft:#DCE8E4;
+    --line:#D8D2C4; --line-strong:#C3BBA7;
+    --good:#3F7D4A; --good-soft:#E3EFE1;
+    --warn:#A6761F; --warn-soft:#F4E9D4;
+    --critical:#A23B2E; --critical-soft:#F3DFD9;
+    --radius:6px;
+    --font-display:"Archivo",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181A; --surface:#1B2122; --surface-2:#222928; --surface-3:#2B3332;
+      --ink:#E8E6DD; --ink-soft:#AEB4A9; --ink-faint:#747B73;
+      --accent:#79C4B4; --accent-soft:#223431;
+      --line:#303837; --line-strong:#3D4746;
+      --good:#79CB85; --good-soft:#1E2D21;
+      --warn:#E3B64E; --warn-soft:#31291A;
+      --critical:#E67E6E; --critical-soft:#35221F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181A; --surface:#1B2122; --surface-2:#222928; --surface-3:#2B3332;
+    --ink:#E8E6DD; --ink-soft:#AEB4A9; --ink-faint:#747B73;
+    --accent:#79C4B4; --accent-soft:#223431;
+    --line:#303837; --line-strong:#3D4746;
+    --good:#79CB85; --good-soft:#1E2D21;
+    --warn:#E3B64E; --warn-soft:#31291A;
+    --critical:#E67E6E; --critical-soft:#35221F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-display); font-size:14.5px; -webkit-font-smoothing:antialiased;}
+  .page{max-width:1080px; margin:0 auto; padding:32px 24px 80px;}
+
+  header{display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:28px;}
+  h1{font-size:22px; font-weight:800; margin:0; letter-spacing:-0.01em;}
+  .asof{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint);}
+
+  .loading-note{font-family:var(--font-mono); font-size:12px; color:var(--warn); margin-bottom:14px; display:none;}
+  .loading-note.show{display:block;}
+
+  section{margin-bottom:32px;}
+  h2{font-size:13px; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); font-weight:500; margin:0 0 12px; border-bottom:1px solid var(--line); padding-bottom:8px;}
+
+  .board{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;}
+  @media (max-width:880px){.board{grid-template-columns:repeat(2,1fr);}}
+  .col{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px; min-height:60px;}
+  .col .col-label{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; display:flex; justify-content:space-between;}
+  .col-label .count{color:var(--ink-faint);}
+  .card{background:var(--surface-2); border-radius:4px; padding:8px 10px; margin-bottom:8px; font-size:13px;}
+  .card .title{font-weight:600; margin-bottom:3px;}
+  .card .meta{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);}
+  .empty{color:var(--ink-faint); font-size:12.5px; padding:6px 2px;}
+
+  .col[data-status="queued"] .col-label{color:var(--ink-soft);}
+  .col[data-status="active"] .col-label{color:var(--accent);}
+  .col[data-status="blocked"] .col-label{color:var(--critical);}
+  .col[data-status="needs-approval"] .col-label{color:var(--warn);}
+  .col[data-status="done"] .col-label{color:var(--good);}
+
+  .list{display:flex; flex-direction:column; gap:8px;}
+  .handoff-row{display:flex; gap:10px; align-items:baseline; background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:8px 12px; font-size:13px;}
+  .handoff-row .chain{font-family:var(--font-mono); font-size:11.5px; color:var(--accent); white-space:nowrap;}
+  .handoff-row .summary{flex:1;}
+  .handoff-row .at{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); white-space:nowrap;}
+
+  .approval-row{display:flex; gap:12px; align-items:center; background:var(--warn-soft); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px;}
+  .approval-row .info{flex:1;}
+  .approval-row .action{font-weight:600; margin-bottom:2px;}
+  .approval-row .meta{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);}
+  .approval-row .btns{display:flex; gap:8px; flex-shrink:0;}
+  button{font-family:var(--font-display); font-size:12.5px; font-weight:600; border:none; border-radius:4px; padding:7px 14px; cursor:pointer;}
+  button.approve{background:var(--good); color:#fff;}
+  button.reject{background:var(--critical); color:#fff;}
+  button:disabled{opacity:.45; cursor:default;}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .unavailable{padding:60px 20px; text-align:center; color:var(--ink-faint);}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<div class="page">
+  <header>
+    <h1>Control Room</h1>
+    <span class="asof" id="asof"></span>
+  </header>
+  <div class="loading-note" id="loading-note">Still loading — data may be out of date.</div>
+
+  <section>
+    <h2>Tasks</h2>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section>
+    <h2>Needs your approval</h2>
+    <div class="list" id="approvals"></div>
+  </section>
+
+  <section>
+    <h2>Recent handoffs</h2>
+    <div class="list" id="handoffs"></div>
+  </section>
+</div>
+
+<script>
+const STATUSES = ["queued","active","blocked","needs-approval","done"];
+const esc = (s) => String(s ?? "");
+
+function setText(el, text) { el.textContent = text; }
+
+function renderBoard(tasks) {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  for (const status of STATUSES) {
+    const col = document.createElement("div");
+    col.className = "col";
+    col.dataset.status = status;
+    const rows = tasks.filter(t => t.status === status);
+    const label = document.createElement("div");
+    label.className = "col-label";
+    const name = document.createElement("span");
+    setText(name, status);
+    const count = document.createElement("span");
+    count.className = "count";
+    setText(count, String(rows.length));
+    label.append(name, count);
+    col.appendChild(label);
+    if (rows.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      setText(empty, "—");
+      col.appendChild(empty);
+    }
+    for (const t of rows) {
+      const card = document.createElement("div");
+      card.className = "card";
+      const title = document.createElement("div");
+      title.className = "title";
+      setText(title, t.title || t.id);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      setText(meta, `${t.office || "?"} · ${t.owner_agent || "?"}`);
+      card.append(title, meta);
+      col.appendChild(card);
+    }
+    board.appendChild(col);
+  }
+}
+
+function renderHandoffs(handoffs) {
+  const el = document.getElementById("handoffs");
+  el.innerHTML = "";
+  if (handoffs.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    setText(empty, "No handoffs yet.");
+    el.appendChild(empty);
+    return;
+  }
+  for (const h of handoffs) {
+    const row = document.createElement("div");
+    row.className = "handoff-row";
+    const chain = document.createElement("span");
+    chain.className = "chain";
+    setText(chain, `${h.from || "?"} → ${h.to || "?"}`);
+    const summary = document.createElement("span");
+    summary.className = "summary";
+    setText(summary, h.summary || "");
+    const at = document.createElement("span");
+    at.className = "at";
+    setText(at, h.at || "");
+    row.append(chain, summary, at);
+    el.appendChild(row);
+  }
+}
+
+function renderApprovals(db, approvals) {
+  const el = document.getElementById("approvals");
+  el.innerHTML = "";
+  if (approvals.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    setText(empty, "Nothing pending.");
+    el.appendChild(empty);
+    return;
+  }
+  for (const a of approvals) {
+    const row = document.createElement("div");
+    row.className = "approval-row";
+    const info = document.createElement("div");
+    info.className = "info";
+    const action = document.createElement("div");
+    action.className = "action";
+    setText(action, a.action || "");
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    setText(meta, `${a.task_id || "?"} · requested by ${a.requested_by || "?"}`);
+    info.append(action, meta);
+
+    const btns = document.createElement("div");
+    btns.className = "btns";
+    const approveBtn = document.createElement("button");
+    approveBtn.className = "approve";
+    setText(approveBtn, "Approve");
+    const rejectBtn = document.createElement("button");
+    rejectBtn.className = "reject";
+    setText(rejectBtn, "Reject");
+
+    const resolve = async (status) => {
+      approveBtn.disabled = true;
+      rejectBtn.disabled = true;
+      try {
+        await db.doc("approvals/" + a.task_id).update({
+          status,
+          resolved_at: new Date().toISOString(),
+        });
+      } catch (e) {
+        approveBtn.disabled = false;
+        rejectBtn.disabled = false;
+        action.textContent = (a.action || "") + "  [write failed — try again]";
+      }
+    };
+    approveBtn.addEventListener("click", () => resolve("approved"));
+    rejectBtn.addEventListener("click", () => resolve("rejected"));
+
+    btns.append(approveBtn, rejectBtn);
+    row.append(info, btns);
+    el.appendChild(row);
+  }
+}
+
+async function main() {
+  document.getElementById("asof").textContent = new Date().toLocaleString();
+
+  const db = await claude.use("db");
+  if (!db) {
+    document.querySelector(".page").innerHTML = '<div class="unavailable">Dashboard unavailable in this view.</div>';
+    return;
+  }
+
+  const loadingNote = document.getElementById("loading-note");
+  const timers = {};
+  function armTimer(key) {
+    timers[key] = setTimeout(() => loadingNote.classList.add("show"), 10000);
+  }
+  function clearTimer(key) {
+    if (timers[key]) { clearTimeout(timers[key]); timers[key] = null; }
+    if (Object.values(timers).every(t => !t)) loadingNote.classList.remove("show");
+  }
+
+  armTimer("tasks");
+  db.collection("tasks").onSnapshot(
+    (snap) => { clearTimer("tasks"); renderBoard(snap.docs.map(d => d.data())); },
+    () => { clearTimer("tasks"); }
+  );
+
+  armTimer("handoffs");
+  db.collection("handoffs").orderBy("at", "desc").limit(20).onSnapshot(
+    (snap) => { clearTimer("handoffs"); renderHandoffs(snap.docs.map(d => d.data())); },
+    () => { clearTimer("handoffs"); }
+  );
+
+  armTimer("approvals");
+  db.collection("approvals").where("status", "==", "pending").onSnapshot(
+    (snap) => { clearTimer("approvals"); renderApprovals(db, snap.docs.map(d => d.data())); },
+    () => { clearTimer("approvals"); }
+  );
+}
+
+main();
+</script>
