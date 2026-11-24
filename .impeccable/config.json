@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "office/dashboard.html"
+        ],
+        "createdAt": "2026-11-24T11:55:26.379Z",
+        "reason": "same cross-theme false positive already triaged on the original ~/.claude/office/dashboard.html (dark --warn vs light --surface, disjoint theme blocks, never co-rendered under the CSS cascade) -- this is an identical copy exported to the public repo"
+      }
+    ]
+  }
+}
