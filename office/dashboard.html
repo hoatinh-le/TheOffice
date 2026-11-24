@@ -56,6 +56,7 @@
   .card .title{font-weight:600; margin-bottom:3px;}
   .card .meta{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); display:flex; justify-content:space-between; gap:6px;}
   .card .chain-tag{color:var(--accent); flex-shrink:0;}
+  .card .wt-tag{color:var(--warn); margin-top:3px; justify-content:flex-start !important;}
   .empty{color:var(--ink-faint); font-size:12.5px; padding:6px 2px;}
 
   .chain-group{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px;}
@@ -174,6 +175,12 @@ function renderBoard(tasks) {
         meta.appendChild(tag);
       }
       card.append(title, meta);
+      if (t.worktree) {
+        const wt = document.createElement("div");
+        wt.className = "meta wt-tag";
+        setText(wt, "⎇ " + t.worktree);
+        card.appendChild(wt);
+      }
       col.appendChild(card);
     }
     board.appendChild(col);

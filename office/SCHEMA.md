@@ -5,10 +5,12 @@ Three JSONL files under `~/.claude/office/`, one record per line. New tasks/hand
 ## `tasks.jsonl`
 
 ```json
-{"id": "<slug>", "chain_id": null, "office": "engineering", "owner_agent": "engineering-head", "title": "<short title>", "status": "queued|active|blocked|needs-approval|done", "linear_id": null, "created_at": "<ISO8601>", "updated_at": "<ISO8601>"}
+{"id": "<slug>", "chain_id": null, "office": "engineering", "owner_agent": "engineering-head", "title": "<short title>", "status": "queued|active|blocked|needs-approval|done", "linear_id": null, "worktree": null, "created_at": "<ISO8601>", "updated_at": "<ISO8601>"}
 ```
 
 `chain_id` groups every stage of one multi-office `/office` request (null for a single-stage task, or a single-stage co-pilot-mode task). Each stage still gets its own `id` — `chain_id` is how the dashboard and a reader correlate them, not a replacement for the per-stage id.
+
+`worktree` is the branch name when an engineering/quality stage ran isolated (`isolation: "worktree"` on the `Agent` call) and made changes — `null` for every other stage, and `null` for an isolated stage that made no changes (the worktree is auto-cleaned up in that case, nothing to point to). Changes on that branch aren't on the main branch yet; merging it is a `merge`, gated the same as any other.
 
 ## `handoffs.jsonl`
 
@@ -27,4 +29,4 @@ Three JSONL files under `~/.claude/office/`, one record per line. New tasks/hand
 - **Central Office** (the `/office` command) is the only writer of `handoffs.jsonl`, and the only one who creates a task's initial `"queued"` record in `tasks.jsonl`.
 - **The owning head** (whichever agent the task's `owner_agent` field names — `engineering-head`, `product-head`, `quality-head`, `research-head`, `design-head`, `data-head`, or `learning-head`) is the only one who updates that record's `status` field afterward, and the only writer of its own `approvals.jsonl` entries.
 
-No office duplicates Linear's or GitHub's state here — a `tasks.jsonl` record stores a Linear issue ID (once Linear is connected) plus the office/agent-ownership metadata Linear doesn't have, never the issue content itself.
+No office duplicates Linear's or GitHub's state here — a `tasks.jsonl` record stores a real Linear issue ID (for tasks `product-head` filed) plus the office/agent-ownership metadata Linear doesn't have, never the issue content itself.
