@@ -1,4 +1,4 @@
-# Claude Office System
+# The Office 
 
 A Central Office + specialist-office architecture for [Claude Code](https://claude.com/claude-code): one entry point that classifies a request, routes it to the right specialist, chains multiple specialists automatically when a request needs it, and tracks everything on a live dashboard — while a separate, deliberately lighter "co-pilot mode" stays available for anything you want to drive yourself.
 
