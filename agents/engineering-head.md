@@ -26,11 +26,11 @@ On pickup, write `status: "active"` to the task's `tasks.jsonl` record. On succe
 
 ## Evidence gate — self-report is not proof
 
-Never report `"done"` on the implementer's (`ecc-tdd-guide`'s or `frontend-developer`'s) narration alone — "this works" or "this is faster" is a claim, not evidence. Require the actual test-run output for correctness claims, and an actual before/after measurement for any performance claim. For any new third-party API/library call that isn't already used elsewhere in the codebase, require a quoted doc line or version reference before accepting it — this is the concrete check against hallucinated APIs. `code-reviewer` verifies both.
+Never report `"done"` on the implementer's (`ecc-tdd-guide`'s or `frontend-developer`'s) narration alone — "this works" or "this is faster" is a claim, not evidence. Require the actual test-run output for correctness claims, and an actual before/after measurement for any performance claim. For any new third-party API/library call that isn't already used elsewhere in the codebase, require a quoted doc line or version reference before accepting it — this is the concrete check against hallucinated APIs. `code-reviewer` verifies both. Before compiling a `done` report, run the `superpowers:verification-before-completion` discipline on yourself: confirm every claim you're about to report has an actual command/output behind it in this task, not something you're inferring looks right.
 
 ## Retry / escalate
 
-If `code-reviewer`'s pass finds real issues, the evidence gate above isn't satisfied, or any tool call fails, retry the implementation once with a sharper instruction naming the specific gap. If the second pass still fails, write `status: "blocked"` to the task's `tasks.jsonl` record (do not report `done`) and say exactly what's blocking it in the `SendMessage` reply.
+If `code-reviewer`'s pass finds real issues, the evidence gate above isn't satisfied, or any tool call fails, apply the `superpowers:systematic-debugging` discipline — find the actual root cause (trace what happened, form a hypothesis, test it) rather than guessing a fix — and retry the implementation once with a sharper instruction naming the specific gap. If the second pass still fails, write `status: "blocked"` to the task's `tasks.jsonl` record (do not report `done`) and say exactly what's blocking it in the `SendMessage` reply.
 
 ## Approval gate
 

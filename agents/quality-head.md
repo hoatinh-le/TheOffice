@@ -23,7 +23,7 @@ On pickup, write `status: "active"` to the task's `tasks.jsonl` record. On succe
 
 ## Evidence gate — self-report is not proof
 
-Never report a ship/no-ship call on narration alone. `qa`'s pass must include what it actually observed (screenshots, console output, a described reproduction of the happy path and at least one edge case) — a "looks fine" from `qa` is not a pass. `release-manager`'s pass must name the actual test/lint commands it ran and their result.
+Never report a ship/no-ship call on narration alone. `qa`'s pass must include what it actually observed (screenshots, console output, a described reproduction of the happy path and at least one edge case) — a "looks fine" from `qa` is not a pass. `release-manager`'s pass must name the actual test/lint commands it ran and their result. Before compiling your verdict, run the `superpowers:verification-before-completion` discipline on yourself: every claim in your report needs an actual command/output behind it from this task, not an inference that it's probably fine.
 
 ## Retry / escalate
 

@@ -54,8 +54,22 @@
   .col-label .count{color:var(--ink-faint);}
   .card{background:var(--surface-2); border-radius:4px; padding:8px 10px; margin-bottom:8px; font-size:13px;}
   .card .title{font-weight:600; margin-bottom:3px;}
-  .card .meta{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);}
+  .card .meta{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); display:flex; justify-content:space-between; gap:6px;}
+  .card .chain-tag{color:var(--accent); flex-shrink:0;}
   .empty{color:var(--ink-faint); font-size:12.5px; padding:6px 2px;}
+
+  .chain-group{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px;}
+  .chain-group .chain-label{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); margin-bottom:8px;}
+  .chain-trail{display:flex; align-items:stretch; gap:4px; flex-wrap:wrap;}
+  .chain-stage{display:flex; flex-direction:column; gap:1px; background:var(--surface-2); border-radius:4px; padding:6px 10px; font-size:12.5px; min-width:110px;}
+  .chain-stage .office{font-weight:600;}
+  .chain-stage .status{font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.04em;}
+  .chain-stage[data-status="queued"] .status{color:var(--ink-soft);}
+  .chain-stage[data-status="active"] .status{color:var(--accent);}
+  .chain-stage[data-status="blocked"] .status{color:var(--critical);}
+  .chain-stage[data-status="needs-approval"] .status{color:var(--warn);}
+  .chain-stage[data-status="done"] .status{color:var(--good);}
+  .chain-arrow{display:flex; align-items:center; color:var(--ink-faint); font-size:14px;}
 
   .col[data-status="queued"] .col-label{color:var(--ink-soft);}
   .col[data-status="active"] .col-label{color:var(--accent);}
@@ -91,6 +105,11 @@
     <span class="asof" id="asof"></span>
   </header>
   <div class="loading-note" id="loading-note">Still loading — data may be out of date.</div>
+
+  <section id="chains-section" style="display:none;">
+    <h2>Active chains</h2>
+    <div id="chains"></div>
+  </section>
 
   <section>
     <h2>Tasks</h2>
@@ -145,11 +164,70 @@ function renderBoard(tasks) {
       setText(title, t.title || t.id);
       const meta = document.createElement("div");
       meta.className = "meta";
-      setText(meta, `${t.office || "?"} · ${t.owner_agent || "?"}`);
+      const metaMain = document.createElement("span");
+      setText(metaMain, `${t.office || "?"} · ${t.owner_agent || "?"}`);
+      meta.appendChild(metaMain);
+      if (t.chain_id) {
+        const tag = document.createElement("span");
+        tag.className = "chain-tag";
+        setText(tag, "⛓ " + t.chain_id);
+        meta.appendChild(tag);
+      }
       card.append(title, meta);
       col.appendChild(card);
     }
     board.appendChild(col);
+  }
+}
+
+function renderChains(tasks) {
+  const section = document.getElementById("chains-section");
+  const el = document.getElementById("chains");
+  el.innerHTML = "";
+
+  const groups = new Map();
+  for (const t of tasks) {
+    if (!t.chain_id) continue;
+    if (!groups.has(t.chain_id)) groups.set(t.chain_id, []);
+    groups.get(t.chain_id).push(t);
+  }
+
+  if (groups.size === 0) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "";
+
+  for (const [chainId, stages] of groups) {
+    stages.sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
+    const group = document.createElement("div");
+    group.className = "chain-group";
+    const label = document.createElement("div");
+    label.className = "chain-label";
+    setText(label, chainId);
+    const trail = document.createElement("div");
+    trail.className = "chain-trail";
+    stages.forEach((t, i) => {
+      if (i > 0) {
+        const arrow = document.createElement("div");
+        arrow.className = "chain-arrow";
+        setText(arrow, "→");
+        trail.appendChild(arrow);
+      }
+      const stage = document.createElement("div");
+      stage.className = "chain-stage";
+      stage.dataset.status = t.status;
+      const office = document.createElement("div");
+      office.className = "office";
+      setText(office, t.office || "?");
+      const status = document.createElement("div");
+      status.className = "status";
+      setText(status, t.status || "?");
+      stage.append(office, status);
+      trail.appendChild(stage);
+    });
+    group.append(label, trail);
+    el.appendChild(group);
   }
 }
 
@@ -256,7 +334,12 @@ async function main() {
 
   armTimer("tasks");
   db.collection("tasks").onSnapshot(
-    (snap) => { clearTimer("tasks"); renderBoard(snap.docs.map(d => d.data())); },
+    (snap) => {
+      clearTimer("tasks");
+      const tasks = snap.docs.map(d => d.data());
+      renderBoard(tasks);
+      renderChains(tasks);
+    },
     () => { clearTimer("tasks"); }
   );
 
