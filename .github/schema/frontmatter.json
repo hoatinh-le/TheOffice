@@ -1,0 +1,11 @@
+{
+  "agent": {
+    "required": ["name", "description", "tools"],
+    "optional": ["model"],
+    "model_values": ["sonnet", "opus", "haiku"]
+  },
+  "command": {
+    "required": ["description"],
+    "optional": ["argument-hint"]
+  }
+}

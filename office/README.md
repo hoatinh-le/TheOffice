@@ -10,7 +10,11 @@ All 7 offices exist: Engineering, Product, Quality, Research, Design, Data & Por
 
 ## Starting a new idea — the pattern, not an office
 
-Before any office gets involved, idea validation itself stays co-pilot: run `pm` (logical pressure-test — who it's for, the real assumption, the smallest version, the failure mode) *and* a `last30days`-style check via `researcher` (is there real recent signal anyone wants this) side by side. A logically sound idea with zero market signal is still a thin case. Once it survives both, `/office "spec this and build it"` picks up from there — `product-head` runs its own validate → plan-the-MVP → spec sequence before any code gets written.
+Before any office gets involved, idea validation itself stays co-pilot: run `pm` (logical pressure-test — who it's for, the real assumption, the smallest version, the failure mode) *and* a `last30days`-style check via `researcher` (is there real recent signal anyone wants this) side by side. A logically sound idea with zero market signal is still a thin case.
+
+If it survives both but still has open design questions, run the `grilling` skill (or `grill-with-docs` if you want it writing `GLOSSARY.md`/ADRs as it goes) before handing off — it interviews *you* directly with yes/no questions until the design tree resolves. This only works here, in co-pilot mode, because it needs you answering live; a spawned head agent inside a `/office` chain has no one to interview.
+
+Once it survives validation (and grilling, if used), `/office "spec this and build it"` picks up from there — `product-head` runs its own validate → plan-the-MVP → spec sequence before any code gets written.
 
 ## Approvals
 
